@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthChain - Book Appointment</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header>
+    <h1>🩺 HealthChain</h1>
+    <nav>
+      <a href="/static/index.html">Dashboard</a>
+      <a href="/static/nutrition.html">Nutrition</a>
+      <a href="/static/fitness.html">Fitness</a>
+      <a href="/static/reports.html">Reports</a>
+      <a href="/static/find-clinic.html">Medical</a>
+      <a href="/static/book_appointment.html">Book Appointment</a>
+      <span id="user-status">Guest</span>
+      <button id="login-btn">Login</button>
+      <button id="register-btn">Register</button>
+      <button id="logout-btn" style="display: none;">Logout</button>
+    </nav>
+  </header>
+
+  <section id="book-appointment">
+    <h2>📅 Book an Appointment</h2>
+    <div id="doctor-filter">
+      <label for="location-filter">Filter by Location:</label>
+      <input type="text" id="location-filter" placeholder="Enter location (e.g., City, State)" />
+      <button onclick="filterDoctors()">Filter</button>
+    </div>
+    <div id="doctor-list"></div>
+    <div id="appointment-message"></div>
+
+    <script>
+      // Session management
+      async function checkSession() {
+        try {
+          const response = await fetch("/api/reports", { credentials: "include" });
+          if (response.status === 302 || response.status === 401) {
+            window.location.href = "/static/login.html";
+            return;
+          }
+          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+          const reports = await response.json();
+          const username = reports.length > 0 && reports[0].username ? reports[0].username : "User";
+          document.getElementById("user-status").textContent = username;
+          document.getElementById("login-btn").style.display = "none";
+          document.getElementById("register-btn").style.display = "none";
+          document.getElementById("logout-btn").style.display = "inline";
+        } catch (error) {
+          console.error("Session check failed:", error);
+          document.getElementById("user-status").textContent = "Guest";
+          document.getElementById("login-btn").style.display = "inline";
+          document.getElementById("register-btn").style.display = "inline";
+          document.getElementById("logout-btn").style.display = "none";
+        }
+      }
+
+      // Navigation button handlers
+      document.getElementById("login-btn").addEventListener("click", () => {
+        window.location.href = "/static/login.html";
+      });
+
+      document.getElementById("register-btn").addEventListener("click", () => {
+        window.location.href = "/static/register.html";
+      });
+
+      document.getElementById("logout-btn").addEventListener("click", async () => {
+        try {
+          await fetch("/api/logout", { credentials: "include" });
+          window.location.href = "/static/login.html";
+        } catch (error) {
+          console.error("Logout failed:", error);
+          alert("Logout failed. Please try again.");
+        }
+      });
+
+      // Existing appointment functionality
+      async function loadDoctors() {
+        try {
+          const response = await fetch("/api/doctors", { credentials: "include" });
+          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+          const doctors = await response.json();
+          const list = document.getElementById("doctor-list");
+          list.innerHTML = doctors.map(doc => `
+            <div class="doctor">
+              <p>Name: ${doc.name}</p>
+              <p>Location: ${doc.location}</p>
+              <button onclick="requestAppointment('${doc._id}')">Request Appointment</button>
+            </div>
+          `).join("");
+        } catch (error) {
+          console.error("Failed to load doctors:", error);
+          document.getElementById("doctor-list").innerHTML = "<p>Failed to load doctors.</p>";
+        }
+      }
+
+      function filterDoctors() {
+        const location = document.getElementById("location-filter").value.toLowerCase();
+        loadDoctors().then(() => {
+          const doctors = document.getElementsByClassName("doctor");
+          for (let doctor of doctors) {
+            const docLocation = doctor.getElementsByTagName("p")[1].textContent.split(": ")[1].toLowerCase();
+            doctor.style.display = docLocation.includes(location) ? "block" : "none";
+          }
+        });
+      }
+
+      async function requestAppointment(doctorId) {
+        const patientEmail = prompt("Enter your email to receive confirmation:");
+        if (!patientEmail) return;
+
+        try {
+          const response = await fetch(`/api/appointments/request`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ doctor_id: doctorId, patient_email: patientEmail }),
+            credentials: "include",
+          });
+          const data = await response.json();
+          if (response.ok) {
+            document.getElementById("appointment-message").textContent = data.message || "Appointment requested! Check your email.";
+          } else {
+            document.getElementById("appointment-message").textContent = data.detail || "Failed to request appointment.";
+          }
+        } catch (error) {
+          document.getElementById("appointment-message").textContent = "An error occurred. Please try again.";
+          console.error("Request appointment error:", error);
+        }
+      }
+
+      // Initialize page
+      window.addEventListener("load", () => {
+        checkSession();
+        loadDoctors();
+      });
+    </script>
+  </section>
+</body>
+</html>

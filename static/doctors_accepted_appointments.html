@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthChain - Accepted Appointments</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header>
+    <h1>🩺 HealthChain</h1>
+    <nav>
+      <a href="/static/doctors_dashboard.html">Dashboard</a>
+      <span id="doctor-name">Doctor</span>
+      <button id="logout-btn">Logout</button>
+    </nav>
+  </header>
+
+  <section id="accepted-appointments">
+    <h2>✅ Accepted Appointments</h2>
+    <div id="date-filter">
+      <label for="date-filter">Filter by Accepted Date:</label>
+      <input type="date" id="date-filter" />
+      <button onclick="filterAppointments()">Filter</button>
+      <button onclick="clearFilter()">Clear</button>
+    </div>
+    <div id="appointments-list"></div>
+    <div id="appointments-message"></div>
+  </section>
+
+  <script>
+    async function checkSession() {
+      try {
+        const response = await fetch("/api/doctors/session", { credentials: "include" });
+        console.log("Session check response:", response.status, response);
+        if (response.status === 401) {
+          console.warn("Unauthorized, clearing session and redirecting to login");
+          await fetch("/api/doctors/logout", { credentials: "include" });
+          window.location.href = "/static/doctors_login.html";
+          return false;
+        }
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        const data = await response.json();
+        console.log("Session data:", data);
+        document.getElementById("doctor-name").textContent = `Dr. ${data.name}`;
+        return true;
+      } catch (error) {
+        console.error("Session check failed:", error);
+        await fetch("/api/doctors/logout", { credentials: "include" });
+        window.location.href = "/static/doctors_login.html";
+        return false;
+      }
+    }
+
+    async function loadAppointments(date = null) {
+      try {
+        const url = date ? `/api/doctors/appointments/accepted?date=${date}` : "/api/doctors/appointments/accepted";
+        const response = await fetch(url, { credentials: "include" });
+        if (response.status === 401) {
+          window.location.href = "/static/doctors_login.html";
+          return;
+        }
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        const appointments = await response.json();
+        appointments.sort((a, b) => new Date(a.accepted_at) - new Date(b.accepted_at));
+        const list = document.getElementById("appointments-list");
+        list.innerHTML = appointments.length > 0 ? appointments.map(app => `
+          <div class="block">
+            <p>Patient: ${app.patient_name || "N/A"}</p>
+            <p>Email: ${app.patient_email}</p>
+            <p>Requested: ${new Date(app.requested_at).toLocaleString()}</p>
+            <p>Accepted: ${new Date(app.accepted_at).toLocaleString()}</p>
+          </div>
+        `).join("") : "<p>No accepted appointments found.</p>";
+      } catch (error) {
+        console.error("Failed to load appointments:", error);
+        document.getElementById("appointments-list").innerHTML = "<p>Failed to load appointments.</p>";
+        document.getElementById("appointments-message").textContent = "An error occurred. Please try again.";
+      }
+    }
+
+    function filterAppointments() {
+      const dateInput = document.getElementById("date-filter").value;
+      if (!dateInput) {
+        alert("Please select a date to filter.");
+        return;
+      }
+      loadAppointments(dateInput);
+    }
+
+    function clearFilter() {
+      document.getElementById("date-filter").value = "";
+      loadAppointments();
+    }
+
+    window.addEventListener("load", async () => {
+      const isLoggedIn = await checkSession();
+      if (isLoggedIn) {
+        loadAppointments();
+      }
+    });
+  </script>
+</body>
+</html>

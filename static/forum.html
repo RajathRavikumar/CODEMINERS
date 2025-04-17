@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthChain - Community Forum</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header>
+    <h1>🩺 HealthChain</h1>
+    <nav>
+      <a href="/static/index.html">Dashboard</a>
+      <a href="/static/nutrition.html">Nutrition Tracker</a>
+      <a href="/static/fitness.html">Fitness Plan</a>
+      <a href="/static/reports.html">Health Reports</a>
+      <a href="/static/forum.html">Community Forum</a>
+      <span id="user-status">Guest</span>
+      <button id="login-btn">Login</button>
+      <button id="register-btn">Register</button>
+      <button id="logout-btn" style="display: none;">Logout</button>
+    </nav>
+  </header>
+
+  <section id="forum">
+    <h2>🗣️ Community Forum</h2>
+    <form id="post-form">
+      <label>Post Title:</label>
+      <input type="text" id="post-title" required />
+      <label>Content:</label>
+      <textarea id="post-content" required></textarea>
+      <button type="submit">Post</button>
+    </form>
+    <div id="forum-posts"></div>
+  </section>
+
+  <script src="/static/forum.js"></script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93120481ed8abd41',t:'MTc0NDc4OTA0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>

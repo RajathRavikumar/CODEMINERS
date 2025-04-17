@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HealthChain - Nutrition Tracker</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>🩺 HealthChain</h1>
+    <nav>
+      <a href="/static/index.html">Dashboard</a>
+      <a href="/static/nutrition.html">Nutrition</a>
+      <a href="/static/fitness.html">Fitness</a>
+      <a href="/static/reports.html">Reports</a>
+      <a href="/static/find-clinic.html">Medical</a>
+      <a href="/static/book_appointment.html">Book Appointment</a>
+      <span id="user-status">Guest</span>
+      <button id="login-btn">Login</button>
+      <button id="register-btn">Register</button>
+      <button id="logout-btn" style="display: none;">Logout</button>
+    </nav>
+  </header>
+
+  <section id="nutrition-tracker">
+    <h2>🍎 Nutrition Tracker</h2>
+    <form id="nutrition-form">
+      <label for="food-item">Food Item:</label>
+      <input type="text" id="food-item" required placeholder="e.g., apple, rice" />
+      <button type="submit">Fetch Nutrients & Add</button>
+      <div id="loading" style="display: none;">Loading...</div>
+    </form>
+
+    <div id="nutrient-inputs" style="display: none;">
+      <label for="calories">Calories:</label>
+      <input type="number" id="calories" required step="0.1" readonly />
+      <label for="protein">Protein (g):</label>
+      <input type="number" id="protein" required step="0.1" readonly />
+      <label for="fats">Fats (g):</label>
+      <input type="number" id="fats" required step="0.1" readonly />
+      <label for="carbs">Carbs (g):</label>
+      <input type="number" id="carbs" required step="0.1" readonly />
+      <button type="button" id="confirm-btn">Confirm & Save</button>
+    </div>
+
+    <div id="nutrition-summary">
+      <p>Total Calories: <span id="total-calories">0</span> kcal</p>
+      <p>Protein: <span id="total-protein">0</span> g</p>
+      <p>Fats: <span id="total-fats">0</span> g</p>
+      <p>Carbs: <span id="total-carbs">0</span> g</p>
+      <p>Suggestion: <span id="suggestion"></span></p>
+    </div>
+
+    <div id="nutrition-history"></div>
+  </section>
+
+  <script src="/static/nutrition.js"></script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthChain - Find Nearby Clinics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --card-bg: #f0f4f8;
+      --text-color: #333;
+      --input-bg: #ffffff;
+      --accent: #1e88e5;
+      --error: #d32f2f;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode {
+      --bg-color: #0d1f2d;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --text-color: #e0f7fa;
+      --input-bg: #1c2b36;
+      --accent: #00e5ff;
+      --error: #ff8a80;
+      --shadow: rgba(0, 255, 255, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+    }
+
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      z-index: 1000;
+      box-shadow: 0 0 8px var(--shadow);
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      z-index: 1000;
+    }
+
+    .theme-toggle input {
+      display: none;
+    }
+
+    .theme-toggle label {
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .container {
+      width: 100%;
+    }
+
+    header {
+      padding: 20px;
+      background: var(--card-bg);
+      text-align: center;
+      box-shadow: 0 2px 8px var(--shadow);
+      margin-top: 60px;
+    }
+
+    header h1 {
+      color: var(--accent);
+      margin: 0;
+      font-size: 24px;
+    }
+
+    nav {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    nav a,
+    nav button,
+    nav span {
+      font-size: 14px;
+      padding: 6px 12px;
+      background-color: transparent;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    nav button:hover,
+    nav a:hover,
+    nav span:hover {
+      background-color: var(--accent);
+      color: white;
+    }
+
+    main {
+      padding: 30px 20px;
+    }
+
+    .grid {
+      margin: 0 auto;
+      max-width: 700px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 6px 16px var(--shadow);
+    }
+
+    .card h2 {
+      color: var(--accent);
+      margin-top: 0;
+    }
+
+    .filter-controls {
+      margin: 10px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    label {
+      font-weight: 500;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    select,
+    input[type="number"] {
+      font-size: 14px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid #ccc;
+      background: var(--input-bg);
+      color: var(--text-color);
+    }
+
+    select:focus,
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    button {
+      font-size: 14px;
+      padding: 10px;
+      background: linear-gradient(90deg, var(--accent), #26c6da);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    #medical-services-map {
+      height: 400px;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .leaflet-container {
+      border-radius: 10px;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: var(--card-bg);
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <img src="health-chain-high-resolution-logo.png" alt="HealthChain Logo" class="logo">
+  <div class="theme-toggle">
+    <input type="checkbox" id="themeSwitch" />
+    <label for="themeSwitch">🌙</label>
+  </div>
+  <div class="container">
+    <header>
+      <h1>🩺 HealthChain</h1>
+      <nav>
+        <a href="/static/index.html">Dashboard</a>
+        <a href="/static/find-clinic.html">Find Clinics</a>
+        <a href="/static/nutrition.html">Nutrition Tracker</a>
+        <a href="/static/fitness.html">Fitness Plan</a>
+        <a href="/static/reports.html">Health Reports</a>
+        <a href="/static/book_appointment.html">Book Appointment</a>
+        <span id="user-status">Guest</span>
+        <button id="login-btn">Login</button>
+        <button id="register-btn">Register</button>
+        <button id="logout-btn" style="display: none;">Logout</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="grid">
+        <div class="card">
+          <h2>🏥 Nearby Medical Services</h2>
+          <div class="filter-controls">
+            <label for="service-type">Filter by Type:</label>
+            <select id="service-type">
+              <option value="all">All</option>
+              <option value="hospital">Hospitals</option>
+              <option value="clinic">Clinics</option>
+              <option value="pharmacy">Pharmacies</option>
+            </select>
+            <label for="search-radius">Radius (meters):</label>
+            <input type="number" id="search-radius" value="5000" min="1000" max="20000" step="1000">
+          </div>
+          <button id="find-clinics-btn">Get My Location and Find Clinics</button>
+          <div id="medical-services-map"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2025 HealthChain. All rights reserved.</p>
+    </footer>
+  </div>
+  <script>
+    const themeToggle = document.getElementById('themeSwitch');
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      }
+    });
+
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+  </script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9314d414ad4e070d',t:'MTc0NDgxODUyMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/medical-services.js"></script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9315a8249ad3b056',t:'MTc0NDgyNzIwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9315f4119b26dd1a',t:'MTc0NDgzMDMxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>

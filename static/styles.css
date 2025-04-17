@@ -1,0 +1,119 @@
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 30px;
+  background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+  color: #333;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+nav a {
+  margin: 0 15px;
+  color: #0077ff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav a:hover {
+  color: #005dc0;
+}
+
+h1 {
+  color: #0077ff;
+  font-size: 2.5em;
+}
+
+h2 {
+  color: #333;
+  border-bottom: 2px solid #0077ff;
+  padding-bottom: 5px;
+}
+
+form {
+  background: #ffffff;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #444;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+button {
+  margin-top: 15px;
+  padding: 12px 24px;
+  background: #0077ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #005dc0;
+}
+
+#voice-input-btn {
+  background: #4CAF50;
+  padding: 12px;
+}
+
+#voice-input-btn:hover {
+  background: #45a049;
+}
+
+.block {
+  background: #fff;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-left: 6px solid #0077ff;
+}
+
+#ai-result, #mental-health-tips, #medicine-suggestions {
+  background: #e6f7ff;
+  border-left: 4px solid #0077ff;
+  padding: 15px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+#med-list li {
+  background: #fff5e1;
+  border-left: 4px solid orange;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+#health-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+canvas {
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}

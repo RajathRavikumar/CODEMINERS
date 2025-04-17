@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HealthChain - Register</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card-bg: #f0f4f8;
+      --text: #333;
+      --input-bg: #fff;
+      --accent: #1e88e5;
+      --error: #d32f2f;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+    body.dark-mode {
+      --bg: #0d1f2d;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --text: #e0f7fa;
+      --input-bg: #1c2b36;
+      --accent: #00e5ff;
+      --error: #ff8a80;
+      --shadow: rgba(0, 255, 255, 0.1);
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+
+    .theme-toggle input {
+      display: none;
+    }
+
+    .theme-toggle label {
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .container {
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px var(--shadow);
+      width: 360px;
+      color: var(--text);
+      transition: all 0.4s ease;
+    }
+
+    .logo-container {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid var(--accent);
+    }
+
+    .logo-container img {
+      max-width: 70%;
+      border-radius: 50%;
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--accent);
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      background: var(--input-bg);
+      color: var(--text);
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, var(--accent), #26c6da);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+
+    .error {
+      color: var(--error);
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .links {
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-toggle">
+    <input type="checkbox" id="themeSwitch" />
+    <label for="themeSwitch">🌙</label>
+  </div>
+
+  <div class="container">
+    <div class="logo-container">
+      <img src="health-chain-high-resolution-logo.png" alt="HealthChain Logo"/>
+    </div>
+    <h2>Register</h2>
+    <form id="registerForm" method="POST">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required />
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+      <button type="submit" id="registerBtn">Register</button>
+    </form>
+    <div id="errorMsg" class="error"></div>
+    <div class="links">
+      Already have an account? <a href="/static/login.html">Login here</a>
+    </div>
+  </div>
+
+  <script>
+    // Theme toggle
+    const themeToggle = document.getElementById('themeSwitch');
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      }
+    });
+
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+
+    // Registration logic
+    const form = document.getElementById('registerForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const registerBtn = document.getElementById('registerBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.style.display = 'none';
+      registerBtn.disabled = true;
+
+      try {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value;
+        if (!username || !password || !email) {
+          throw new Error("Please fill in all fields");
+        }
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password, email }),
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (response.ok) {
+          window.location.href = data.redirect || '/static/index.html';
+        } else {
+          throw new Error(data.detail || `Registration failed (Status: ${response.status})`);
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        errorMsg.textContent = error.message || 'Server error, please try again';
+        errorMsg.style.display = 'block';
+      } finally {
+        registerBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

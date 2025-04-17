@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthChain - Fitness Plan</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header>
+    <h1>🩺 HealthChain</h1>
+    <nav>
+      <a href="/static/index.html">Dashboard</a>
+      <a href="/static/nutrition.html">Nutrition</a>
+      <a href="/static/fitness.html">Fitness</a>
+      <a href="/static/reports.html">Reports</a>
+      <a href="/static/find-clinic.html">Medical</a>
+      <a href="/static/book_appointment.html">Book Appointment</a>
+      <span id="user-status">Guest</span>
+      <button id="login-btn">Login</button>
+      <button id="register-btn">Register</button>
+      <button id="logout-btn" style="display: none;">Logout</button>
+    </nav>
+  </header>
+
+  <section id="fitness-plan">
+    <h2>💪 Fitness Plan</h2>
+    <form id="fitness-form">
+      <label>Exercise Name:</label>
+      <input type="text" id="exercise-name" required />
+      <label>Duration (min):</label>
+      <input type="number" id="duration" required />
+      <label>Intensity (1-10):</label>
+      <input type="number" id="intensity" min="1" max="10" required />
+      <label>Weight (kg):</label>
+      <input type="number" id="weight" step="0.1" />
+      <label>Goal:</label>
+      <select id="goal" required>
+        <option value="" disabled selected>Select a goal</option>
+        <option value="lose weight">Lose Weight</option>
+        <option value="gain muscle">Gain Muscle</option>
+        <option value="maintain fitness">Maintain Fitness</option>
+      </select>
+      <label>Fitness Level:</label>
+      <select id="fitness-level" required>
+        <option value="" disabled selected>Select a level</option>
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+      <button type="submit">Add Exercise</button>
+    </form>
+    <button id="plan-btn">Get Workout Plan</button>
+    <div id="fitness-plan-view"></div>
+  </section>
+
+  <script src="/static/fitness.js"></script>
+</body>
+</html>

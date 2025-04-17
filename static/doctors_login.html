@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthChain - Doctor Login</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header>
+    <h1>🩺 HealthChain</h1>
+    <nav>
+      <a href="/static/doctors_login.html">Login</a>
+      <a href="/static/doctors_register.html">Doctor Register</a>
+    </nav>
+    <div class="links">
+        <a href="login.html">User Login</a>
+    </div>
+  </header>
+
+  <section id="doctor-login">
+    <h2>👨‍⚕️ Doctor Login</h2>
+    <form id="doctor-login-form">
+      <label for="doctor-email">Email:</label>
+      <input type="email" id="doctor-email" required placeholder="Enter your email" />
+      <label for="doctor-password">Password:</label>
+      <input type="password" id="doctor-password" required placeholder="Enter your password" />
+      <button type="submit">Login</button>
+    </form>
+    <div id="login-message"></div>
+  </section>
+
+  <script>
+    document.getElementById("doctor-login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const credentials = {
+        email: document.getElementById("doctor-email").value,
+        password: document.getElementById("doctor-password").value,
+      };
+
+      const formData = new FormData();
+      formData.append("email", credentials.email);
+      formData.append("password", credentials.password);
+
+      try {
+        const response = await fetch("/api/doctors/login", {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+        const data = await response.json();
+        if (response.ok) {
+          console.log("Login successful, session set:", data);
+          document.getElementById("login-message").textContent = data.message || "Login successful! Redirecting...";
+          setTimeout(() => window.location.href = "/static/doctors_dashboard.html", 1000);
+        } else {
+          console.error("Login failed:", data);
+          document.getElementById("login-message").textContent = data.detail || "Login failed.";
+        }
+      } catch (error) {
+        console.error("Login error:", error.message);
+        document.getElementById("login-message").textContent = "An error occurred. Please try again.";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthChain - Authentication</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Include Lottie player library -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <style>
+:root {
+  --bg-color: #ffffff;
+  --form-bg: #f3f4f6;
+  --input-bg: #ffffff;
+  --text-color: #333;
+  --accent-color: #00796b;
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode {
+  --bg-color: #0d1f2d;
+  --form-bg: rgba(255, 255, 255, 0.05);
+  --input-bg: #1c2b36;
+  --text-color: #e0f7fa;
+  --accent-color: #00e5ff;
+  --shadow: rgba(0, 255, 255, 0.2);
+}
+
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 20px;
+  transition: background 0.5s, color 0.5s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+}
+
+.theme-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.theme-toggle label {
+  font-size: 22px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Splash screen for Lottie animation */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.5s ease;
+}
+
+.splash-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lottie-animation {
+  width: 300px;
+  height: 300px;
+}
+
+.auth-container {
+  background: var(--form-bg);
+  border-radius: 18px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 20px var(--shadow);
+  width: 400px;
+  overflow: hidden;
+  border: 1px solid rgba(173, 216, 230, 0.1);
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.auth-container.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.form-container {
+  padding: 35px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo-container {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background: rgba(0, 255, 255, 0.1);
+  border: 2px solid var(--accent-color);
+  box-shadow: 0 0 10px var(--shadow);
+}
+
+.logo-container img {
+  max-width: 80%;
+  border-radius: 50%;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 280px;
+  position: relative;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group input:not(:placeholder-shown) {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 8px var(--shadow);
+}
+
+.form-group label {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: #888;
+  transition: 0.3s ease;
+  pointer-events: none;
+}
+
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+  top: -10px;
+  left: 10px;
+  font-size: 12px;
+  background: var(--input-bg);
+  color: var(--accent-color);
+  padding: 0 4px;
+  border-radius: 4px;
+}
+
+button {
+  width: 100%;
+  max-width: 280px;
+  padding: 14px;
+  background: linear-gradient(90deg, var(--accent-color), #26c6da);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px var(--shadow);
+}
+
+button:hover {
+  transform: translateY(-3px);
+}
+
+button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #ef5350;
+  margin-top: 12px;
+  font-size: 14px;
+  display: none;
+}
+
+.links {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.links a {
+  color: var(--accent-color);
+  text-decoration: none;
+  margin: 0 12px;
+  font-size: 13px;
+  transition: color 0.3s ease;
+}
+
+.links a:hover {
+  color: #26c6da;
+}
+    </style>
+</head>
+<body>
+    <!-- Splash screen with Lottie animation -->
+    <div class="splash-screen" id="splashScreen">
+        <lottie-player
+            class="lottie-animation"
+            src="Animation.json"
+            background="transparent"
+            speed="1"
+            autoplay
+        ></lottie-player>
+    </div>
+
+    <div class="theme-toggle">
+        <input type="checkbox" id="themeSwitch">
+        <label for="themeSwitch">🌙</label>
+    </div>
+    
+    <div class="auth-container" id="authContainer">
+        <div class="form-container">
+            <div class="logo-container">
+                <img src="health-chain-high-resolution-logo.png" alt="HealthChain Logo">
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="text" id="username" name="username" placeholder=" " required>
+                    <label for="username">Username</label>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" name="password" placeholder=" " required>
+                    <label for="password">Password</label>
+                </div>
+                <button type="submit" id="loginSubmitBtn">Submit</button>
+            </form>
+            <div class="links">
+                <a href="register.html">Register</a>
+            </div>
+            <div class="links">
+              <a href="doctors_login.html">Doctor Login</a>
+          </div>
+            <div id="loginErrorMsg" class="error"></div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeSwitch');
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.checked = true;
+            }
+        });
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // Login form functionality
+        const loginForm = document.getElementById('loginForm');
+        const loginErrorMsg = document.getElementById('loginErrorMsg');
+        const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginErrorMsg.style.display = 'none';
+            loginSubmitBtn.disabled = true;
+            try {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                if (!username || !password) {
+                    throw new Error("Please fill in all fields");
+                }
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+                    credentials: "include"
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    window.location.href = data.redirect || '/static/index.html';
+                } else {
+                    throw new Error(data.detail || `Login failed,Check User Name Or Password (Status: ${response.status})`);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                loginErrorMsg.textContent = error.message || 'Server error, please try again';
+                loginErrorMsg.style.display = 'block';
+            } finally {
+                loginSubmitBtn.disabled = false;
+            }
+        });
+
+        // Splash screen and animation control
+        const splashScreen = document.getElementById('splashScreen');
+        const authContainer = document.getElementById('authContainer');
+        setTimeout(() => {
+            splashScreen.classList.add('hidden');
+            authContainer.classList.add('visible');
+        }, 2000); // Hide splash after 3 seconds
+    </script>
+
+</body>
+</html>

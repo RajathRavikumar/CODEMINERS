@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthChain - Health Reports</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --form-bg: #f3f4f6;
+      --input-bg: #ffffff;
+      --text-color: #333;
+      --accent-color: #00796b;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode {
+      --bg-color: #0d1f2d;
+      --form-bg: rgba(255, 255, 255, 0.05);
+      --input-bg: #1c2b36;
+      --text-color: #e0f7fa;
+      --accent-color: #00e5ff;
+      --shadow: rgba(0, 255, 255, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      transition: background 0.5s ease, color 0.5s ease, border 0.3s ease, transform 0.3s ease;
+    }
+
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      z-index: 1000;
+      box-shadow: 0 0 10px var(--shadow);
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      z-index: 1000;
+    }
+
+    .theme-toggle input {
+      display: none;
+    }
+
+    .theme-toggle label {
+      font-size: 22px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    header {
+      padding: 20px;
+      background: var(--form-bg);
+      border-radius: 18px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 0 20px var(--shadow);
+      border: 1px solid rgba(173, 216, 230, 0.1);
+      text-align: center;
+      margin: 60px auto 20px;
+      max-width: 700px;
+    }
+
+    header h1 {
+      color: var(--accent-color);
+      margin: 0;
+      font-size: 24px;
+    }
+
+    nav {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    nav a,
+    nav button,
+    nav span {
+      font-size: 14px;
+      padding: 8px 16px;
+      background: transparent;
+      border: 2px solid var(--accent-color);
+      border-radius: 12px;
+      color: var(--accent-color);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    nav a:hover,
+    nav button:hover,
+    nav span:hover {
+      background: linear-gradient(90deg, var(--accent-color), #26c6da);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    main {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    section.report-section {
+      background: var(--form-bg);
+      border-radius: 18px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 0 20px var(--shadow);
+      border: 1px solid rgba(173, 216, 230, 0.1);
+      padding: 30px;
+      width: 100%;
+      max-width: 700px;
+      overflow: auto;
+    }
+
+    section h2,
+    section h3 {
+      color: var(--accent-color);
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .photo-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+      width: 100%;
+    }
+
+    .form-group label {
+      position: absolute;
+      top: 50%;
+      left: 14px;
+      transform: translateY(-50%);
+      font-size: 15px;
+      color: #888;
+      transition: 0.3s ease;
+      pointer-events: none;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 14px;
+      font-size: 15px;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      background: var(--input-bg);
+      color: var(--text-color);
+    }
+
+    .form-group input:focus,
+    .form-group input:not(:placeholder-shown) {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 8px var(--shadow);
+    }
+
+    .form-group input:focus + label,
+    .form-group input:not(:placeholder-shown) + label {
+      top: -10px;
+      left: 10px;
+      font-size: 12px;
+      background: var(--input-bg);
+      color: var(--accent-color);
+      padding: 0 4px;
+      border-radius: 4px;
+    }
+
+    button {
+      width: 100%;
+      max-width: 280px;
+      padding: 14px;
+      background: linear-gradient(90deg, var(--accent-color), #26c6da);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px var(--shadow);
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+    }
+
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      color: #888;
+      font-size: 14px;
+      margin-top: 20px;
+    }
+
+    .loading.active {
+      display: block;
+    }
+
+    #analysis-result {
+      margin-top: 20px;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    #analysis-result details {
+      margin-top: 10px;
+    }
+
+    #analysis-result pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin: 0;
+      padding: 10px;
+      background: var(--input-bg);
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    #report-preview {
+      margin-top: 10px;
+      padding: 10px;
+      background: var(--input-bg);
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      display: none;
+    }
+
+    #download-link {
+      display: none;
+      margin-top: 15px;
+      color: var(--accent-color);
+      text-decoration: underline;
+      font-size: 14px;
+    }
+
+    #download-link:hover {
+      color: #26c6da;
+    }
+  </style>
+</head>
+<body>
+  <img src="health-chain-high-resolution-logo.png" alt="HealthChain Logo" class="logo">
+  <div class="theme-toggle">
+    <input type="checkbox" id="themeSwitch" />
+    <label for="themeSwitch">🌙</label>
+  </div>
+  <header>
+    <h1>🩺 HealthChain</h1>
+    <nav>
+      <a href="/static/index.html">Dashboard</a>
+      <a href="/static/nutrition.html">Nutrition Tracker</a>
+      <a href="/static/fitness.html">Fitness Plan</a>
+      <a href="/static/reports.html">Health Reports</a>
+      <a href="/static/find-clinic.html">Medical</a>
+      <span id="user-status">Guest</span>
+      <button id="login-btn" style="display: none;">Login</button>
+      <button id="register-btn" style="display: none;">Register</button>
+      <button id="logout-btn" style="display: none;">Logout</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="health-reports" class="report-section">
+      <h2>📋 Health Reports</h2>
+      <button id="generate-report">Generate PDF Report</button>
+
+      <div class="report-section">
+        <h3>🖼️ Photo Analysis</h3>
+        <form id="upload-form" enctype="multipart/form-data">
+          <div class="photo-options">
+            <div class="form-group">
+              <input type="file" id="report-file" accept="image/jpeg" />
+              <label for="report-file">Upload Photo</label>
+            </div>
+            <button type="button" id="take-photo-btn">Take Photo</button>
+            <div class="form-group">
+              <input type="file" id="camera-input" accept="image/jpeg" capture="environment" style="display: none;" />
+              <label for="camera-input" style="display: none;">Camera Input</label>
+            </div>
+            <button type="submit">Analyze Report</button>
+          </div>
+        </form>
+        <div id="report-preview" class="loading">Loading preview...</div>
+      </div>
+
+      <div id="analysis-result"></div>
+      <a id="download-link" download>📥 Download Report</a>
+      <div id="loading" class="loading">Processing...</div>
+    </section>
+  </main>
+
+  <script>
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeSwitch');
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeToggle.checked = true;
+      }
+    });
+    themeToggle.addEventListener('change', () => {
+      if (themeToggle.checked) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+
+    // Capture camera input
+    document.getElementById("take-photo-btn").addEventListener("click", () => {
+      document.getElementById("camera-input").click();
+    });
+
+    // Generate health report (PDF)
+    document.getElementById("generate-report").addEventListener("click", async () => {
+      const loading = document.getElementById("loading");
+      loading.classList.add("active");
+      try {
+        const response = await fetch("/api/reports", {
+          method: "POST",
+          credentials: "include"
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "Failed to generate report");
+
+        document.getElementById("analysis-result").innerHTML = `
+          <details open>
+            <summary><strong>Report Summary</strong></summary>
+            <pre>${result.summary}</pre>
+          </details>
+        `;
+        const downloadLink = document.getElementById("download-link");
+        downloadLink.href = result.download_url;
+        downloadLink.style.display = "inline-block";
+      } catch (error) {
+        alert("❌ Error: " + error.message);
+      } finally {
+        loading.classList.remove("active");
+      }
+    });
+
+    // Handle photo analysis
+    document.getElementById("upload-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const loading = document.getElementById("loading");
+      loading.classList.add("active");
+      const fileInput = document.getElementById("report-file");
+      const cameraInput = document.getElementById("camera-input");
+      const file = fileInput.files[0] || cameraInput.files[0];
+      if (!file) {
+        alert("Please select or take a photo.");
+        loading.classList.remove("active");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch("/api/analyze-report", {
+          method: "POST",
+          body: formData,
+          credentials: "include"
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || "Failed to analyze report");
+
+        document.getElementById("analysis-result").innerHTML = `
+          <details open>
+            <summary><strong>AI Analysis</strong></summary>
+            <pre>${data.analysis.ai_analysis}</pre>
+          </details>
+        `;
+      } catch (error) {
+        alert("❌ Error: " + error.message);
+      } finally {
+        loading.classList.remove("active");
+      }
+    });
+
+    // Optional: populate user status
+    window.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const response = await fetch("/api/reports", { credentials: "include" });
+        if (response.ok) {
+          const reports = await response.json();
+          const username = reports.length > 0 ? reports[0].username || "User" : "User";
+          document.getElementById("user-status").textContent = username;
+          document.getElementById("login-btn").style.display = "none";
+          document.getElementById("register-btn").style.display = "none";
+          document.getElementById("logout-btn").style.display = "inline-block";
+        }
+      } catch {
+        document.getElementById("user-status").textContent = "Guest";
+        document.getElementById("login-btn").style.display = "inline-block";
+        document.getElementById("register-btn").style.display = "inline-block";
+        document.getElementById("logout-btn").style.display = "none";
+      }
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+      await fetch("/api/logout", { credentials: "include" });
+      location.href = "/static/login.html";
+    });
+  </script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9316049d5bec53ce',t:'MTc0NDgzMDk5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93162ac8c8d9b087',t:'MTc0NDgzMjU1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>

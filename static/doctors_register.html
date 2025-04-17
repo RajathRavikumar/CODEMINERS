@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthChain - Doctor Registration</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header>
+    <h1>🩺 HealthChain</h1>
+    <nav>
+      <a href="/static/doctors_login.html">Doctor Login</a>
+      <a href="/static/doctors_register.html">Doctor Register</a>
+    </nav>
+  </header>
+
+  <section id="doctor-register">
+    <h2>👨‍⚕️ Doctor Registration</h2>
+    <form id="doctor-register-form">
+      <label for="doctor-name">Full Name:</label>
+      <input type="text" id="doctor-name" required placeholder="Enter your full name" />
+      <label for="doctor-email">Email:</label>
+      <input type="email" id="doctor-email" required placeholder="Enter your email" />
+      <label for="doctor-password">Password:</label>
+      <input type="password" id="doctor-password" required placeholder="Enter your password" />
+      <label for="doctor-location">Location:</label>
+      <input type="text" id="doctor-location" required placeholder="Enter your location (e.g., City, State)" />
+      <button type="submit">Register</button>
+    </form>
+    <div id="register-message"></div>
+  </section>
+
+  <script>
+    document.getElementById("doctor-register-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const doctor = {
+        name: document.getElementById("doctor-name").value,
+        email: document.getElementById("doctor-email").value,
+        password: document.getElementById("doctor-password").value,
+        location: document.getElementById("doctor-location").value,
+      };
+
+      try {
+        const response = await fetch("/api/doctors/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(doctor),
+          credentials: "include",
+        });
+        const data = await response.json();
+        if (response.ok) {
+          document.getElementById("register-message").textContent = data.message || "Registration successful! Please login.";
+          document.getElementById("doctor-register-form").reset();
+        } else {
+          document.getElementById("register-message").textContent = data.detail || "Registration failed.";
+        }
+      } catch (error) {
+        document.getElementById("register-message").textContent = "An error occurred. Please try again.";
+        console.error("Registration error:", error);
+      }
+    });
+  </script>
+</body>
+</html>

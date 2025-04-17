@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthChain - Doctor Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header>
+    <h1>🩺 HealthChain</h1>
+    <nav>
+      <a href="/static/doctors_accepted_appointments.html">Accepted Appointments</a>
+      <span id="doctor-name">Doctor</span>
+      <button id="logout-btn">Logout</button>
+    </nav>
+  </header>
+
+  <section id="doctor-dashboard">
+    <h2>👨‍⚕️ Doctor Dashboard</h2>
+    <h3>Pending Appointments</h3>
+    <div id="appointments-list"></div>
+
+    <script>
+      async function checkSession() {
+        try {
+          const response = await fetch("/api/doctors/session", { credentials: "include" });
+          console.log("Session check response:", response.status, response);
+          if (response.status === 401) {
+            console.warn("Unauthorized, clearing session and redirecting to login");
+            await fetch("/api/doctors/logout", { credentials: "include" });
+            window.location.href = "/static/doctors_login.html";
+            return false;
+          }
+          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+          const data = await response.json();
+          console.log("Session data:", data);
+          document.getElementById("doctor-name").textContent = `Dr. ${data.name}`;
+          return true;
+        } catch (error) {
+          console.error("Session check failed:", error);
+          await fetch("/api/doctors/logout", { credentials: "include" });
+          window.location.href = "/static/doctors_login.html";
+          return false;
+        }
+      }
+
+      async function loadAppointments() {
+        try {
+          const response = await fetch("/api/doctors/appointments", { credentials: "include" });
+          if (response.status === 401) {
+            window.location.href = "/static/doctors_login.html";
+            return;
+          }
+          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+          const appointments = await response.json();
+          const list = document.getElementById("appointments-list");
+          list.innerHTML = appointments.map(app => `
+            <div class="appointment">
+              <p>Patient: ${app.patient_name}</p>
+              <p>Email: ${app.patient_email}</p>
+              <p>Requested: ${new Date(app.requested_at).toLocaleString()}</p>
+              <button onclick="acceptAppointment('${app._id}')">Accept</button>
+            </div>
+          `).join("");
+        } catch (error) {
+          console.error("Failed to load appointments:", error);
+          document.getElementById("appointments-list").innerHTML = "<p>Failed to load appointments.</p>";
+        }
+      }
+
+      async function acceptAppointment(appointmentId) {
+        try {
+          const response = await fetch(`/api/doctors/appointments/${appointmentId}/accept`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          });
+          const data = await response.json();
+          if (response.ok) {
+            alert(data.message || "Appointment accepted!");
+            loadAppointments();
+          } else {
+            alert(data.detail || "Failed to accept appointment.");
+          }
+        } catch (error) {
+          alert("An error occurred. Please try again.");
+          console.error("Accept appointment error:", error);
+        }
+      }
+
+      document.getElementById("logout-btn").addEventListener("click", async () => {
+        try {
+          await fetch("/api/doctors/logout", { credentials: "include" });
+          window.location.href = "/static/doctors_login.html";
+        } catch (error) {
+          console.error("Logout failed:", error);
+          alert("Logout failed. Please try again.");
+        }
+      });
+
+      window.addEventListener("load", async () => {
+        const isLoggedIn = await checkSession();
+        if (isLoggedIn) {
+          loadAppointments();
+        }
+      });
+    </script>
+  </section>
+</body>
+</html>

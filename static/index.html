@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthChain Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+  <script src="/static/blocks/blockchain.js" defer></script>
+  <script src="/static/script.js" defer></script>
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --card-bg: #f0f4f8;
+      --text-color: #333;
+      --input-bg: #ffffff;
+      --accent: #1e88e5;
+      --error: #d32f2f;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode {
+      --bg-color: #0d1f2d;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --text-color: #e0f7fa;
+      --input-bg: #1c2b36;
+      --accent: #00e5ff;
+      --error: #ff8a80;
+      --shadow: rgba(0, 255, 255, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      z-index: 1000;
+    }
+
+    .theme-toggle input {
+      display: none;
+    }
+
+    .theme-toggle label {
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    header {
+      padding: 20px;
+      background: var(--card-bg);
+      box-shadow: 0 2px 8px var(--shadow);
+      text-align: center;
+    }
+
+    header h1 {
+      color: var(--accent);
+      margin: 0;
+    }
+
+    nav {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    nav a,
+    nav button {
+      font-size: 14px;
+      padding: 6px 12px;
+      background-color: transparent;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    nav button:hover,
+    nav a:hover {
+      background-color: var(--accent);
+      color: white;
+    }
+
+    main {
+      padding: 30px 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-areas:
+          "health medication"
+          "symptoms charts"
+          "wearable blockchain";
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .card:nth-child(1) { grid-area: health; }
+      .card:nth-child(2) { grid-area: medication; }
+      .card:nth-child(3) { grid-area: symptoms; }
+      .card:nth-child(4) { grid-area: charts; }
+      .card:nth-child(5) { grid-area: wearable; }
+      .card:nth-child(6) { grid-area: blockchain; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 6px 16px var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: var(--accent);
+      font-size: 18px;
+    }
+
+    .card-content {
+      flex-grow: 1;
+      margin-top: 10px;
+      overflow-x: auto;
+      word-wrap: break-word;
+    }
+
+    .wearable-card,
+    .blockchain-card {
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .wearable-card .card-content,
+    .blockchain-card .card-content {
+      flex-grow: 1;
+      min-width: 0;
+      max-width: 100%;
+      padding: 10px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    form label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    form input,
+    form select {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      background: var(--input-bg);
+      color: var(--text-color);
+    }
+
+    form input:focus,
+    form select:focus {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    form button {
+      margin-top: 15px;
+      padding: 10px;
+      font-size: 14px;
+      background: linear-gradient(90deg, var(--accent), #26c6da);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      transform: translateY(-2px);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: var(--card-bg);
+      margin-top: 40px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    ul li {
+      margin-bottom: 6px;
+    }
+
+    #error-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px var(--shadow);
+      color: var(--error);
+      z-index: 1001;
+    }
+
+    #error-popup button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-toggle">
+    <input type="checkbox" id="themeSwitch" />
+    <label for="themeSwitch">🌙</label>
+  </div>
+
+  <header>
+    <h1>🩺 HealthChain</h1>
+    <nav>
+      <a href="/static/nutrition.html">Nutrition</a>
+      <a href="/static/fitness.html">Fitness</a>
+      <a href="/static/reports.html">Reports</a>
+      <a href="/static/find-clinic.html">Medical</a>
+      <a href="/static/book_appointment.html">Book Appointment</a>
+      <span id="user-status">Guest</span>
+      <button id="login-btn">Login</button>
+      <button id="register-btn">Register</button>
+      <button id="logout-btn" style="display: none;">Logout</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="grid">
+      <div class="card">
+        <h2>Health Log</h2>
+        <form id="health-form">
+          <label>Mood:</label>
+          <select id="mood" required>
+            <option value="">Select Mood</option>
+            <option value="Good">Good</option>
+            <option value="Bad">Bad</option>
+            <option value="Neutral">Neutral</option>
+            <option value="Stressed">Stressed</option>
+          </select>
+          <label>Sleep (hrs, max 10):</label>
+          <input type="number" id="sleep" step="0.1" min="0" max="10" required placeholder="e.g., 7.5" />
+          <label>Water (L, max 5):</label>
+          <input type="number" id="water" step="0.1" min="0" max="5" required placeholder="e.g., 2.0" />
+          <label>Exercise (min, max 300):</label>
+          <input type="number" id="exercise" step="1" min="0" max="300" placeholder="e.g., 30" />
+          <label>Note:</label>
+          <input type="text" id="note" placeholder="e.g., Felt tired" />
+          <button type="submit">Log</button>
+        </form>
+        <div id="log-history"></div>
+      </div>
+
+      <div class="card">
+        <h2>Medication</h2>
+        <form id="med-form">
+          <label>Name:</label>
+          <input type="text" id="med-name" required placeholder="e.g., Paracetamol" />
+          <label>Time:</label>
+          <input type="time" id="med-time" required />
+          <label>Dosage:</label>
+          <input type="text" id="med-dosage" placeholder="e.g., 1 pill" />
+          <button type="submit" id="med-submit">Add</button>
+          <button type="button" id="med-reminder">Set Reminder</button>
+        </form>
+        <ul id="med-list"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Symptom Checker</h2>
+        <form id="symptom-form">
+          <label>Symptoms (comma-separated):</label>
+          <input type="text" id="symptoms-input" required placeholder="e.g., fever, cough" />
+          <label>Age:</label>
+          <input type="number" id="age-input" min="0" required placeholder="e.g., 25" />
+          <label>Gender:</label>
+          <select id="gender-input" required>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+          <button type="submit">Check</button>
+          <button type="button" id="voice-input-btn">Voice Input</button>
+        </form>
+        <div id="ai-result"></div>
+        <div id="medicine-suggestions"></div>
+        <div id="mental-health-tips"></div>
+      </div>
+
+      <div class="card">
+        <h2>Charts</h2>
+        <canvas id="moodChart"></canvas>
+        <canvas id="sleepChart"></canvas>
+      </div>
+
+      <div class="card wearable-card">
+        <h2>Wearable Data</h2>
+        <div id="wearable-data" class="card-content">Wearable Data: Loading...</div>
+      </div>
+
+      <div class="card blockchain-card">
+        <h2>Blockchain</h2>
+        <div id="chain-status">Loading...</div>
+        <div id="blockchain-view" class="card-content"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 HealthChain. All rights reserved.</p>
+  </footer>
+
+  <div id="error-popup">
+    <p id="error-message">Invalid medicine name. Please enter a valid medicine.</p>
+    <button onclick="document.getElementById('error-popup').style.display='none'">OK</button>
+  </div>
+
+  <script>
+    // Ensure script runs after DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      const themeToggle = document.getElementById('themeSwitch');
+      window.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+          document.body.classList.add('dark-mode');
+          themeToggle.checked = true;
+        }
+      });
+
+      themeToggle.addEventListener('change', () => {
+        if (themeToggle.checked) {
+          document.body.classList.add('dark-mode');
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.body.classList.remove('dark-mode');
+          localStorage.setItem('theme', 'light');
+        }
+      });
+
+      // Health Log Form Submission
+      const healthForm = document.getElementById('health-form');
+      if (healthForm) {
+        healthForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const mood = document.getElementById('mood').value;
+          const sleep = parseFloat(document.getElementById('sleep').value);
+          const water = parseFloat(document.getElementById('water').value);
+          const exercise = parseInt(document.getElementById('exercise').value) || 0;
+          const note = document.getElementById('note').value;
+
+          if (!mood || sleep > 10 || water > 5 || exercise > 300) {
+            alert('Please enter valid inputs: Mood is required, Sleep ≤ 10hrs, Water ≤ 5L, Exercise ≤ 300min');
+            return;
+          }
+
+          const log = { mood, sleep, water, exercise, note, timestamp: new Date().toISOString() };
+          try {
+            const response = await fetch('/api/logs', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(log),
+              credentials: 'include'
+            });
+            if (response.status === 401 || response.status === 302) {
+              window.location.href = '/static/login.html';
+              return;
+            }
+            if (!response.ok) throw new Error('Failed to log');
+            const data = await response.json();
+            const logHistory = document.getElementById('log-history');
+            logHistory.innerHTML += `<div>${new Date().toLocaleString()}: Mood: ${mood}, Sleep: ${sleep}hrs, Water: ${water}L, Exercise: ${exercise}min, Note: ${note || 'N/A'}</div>`;
+            healthForm.reset();
+          } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to log health data');
+          }
+        });
+      }
+
+      // Medication Form Submission
+      const medForm = document.getElementById('med-form');
+      if (medForm) {
+        medForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const name = document.getElementById('med-name').value.trim();
+          const time = document.getElementById('med-time').value;
+          const dosage = document.getElementById('med-dosage').value.trim() || '1 pill';
+
+          if (!name || !time) {
+            document.getElementById('error-message').textContent = 'Please enter a medicine name and time.';
+            document.getElementById('error-popup').style.display = 'block';
+            return;
+          }
+
+          const med = { name, time, dosage, timestamp: new Date().toISOString() };
+          try {
+            const response = await fetch('/api/meds', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: `name=${encodeURIComponent(name)}&time=${time}&dosage=${encodeURIComponent(dosage)}`,
+              credentials: 'include'
+            });
+            if (response.status === 401 || response.status === 302) {
+              window.location.href = '/static/login.html';
+              return;
+            }
+            if (!response.ok) throw new Error('Failed to add medication');
+            const data = await response.json();
+            const medList = document.getElementById('med-list');
+            medList.innerHTML += `<li>${new Date().toLocaleString()}: ${name}, Time: ${time}, Dosage: ${dosage}</li>`;
+            medForm.reset();
+          } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to add medication');
+          }
+        });
+
+        // Medication Reminder
+        const medReminder = document.getElementById('med-reminder');
+        if (medReminder) {
+          medReminder.addEventListener('click', async () => {
+            const fullName = document.getElementById('med-name').value.trim();
+            if (!fullName) {
+              document.getElementById('error-message').textContent = 'Please enter a medicine name.';
+              document.getElementById('error-popup').style.display = 'block';
+              return;
+            }
+            const time = document.getElementById('med-time').value;
+            if (!time) {
+              document.getElementById('error-message').textContent = 'Please select a reminder time.';
+              document.getElementById('error-popup').style.display = 'block';
+              return;
+            }
+
+            try {
+              const response = await fetch('/api/verify-medicine', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ medicine_name: fullName }),
+                credentials: 'include'
+              });
+              if (response.status === 401 || response.status === 302) {
+                window.location.href = '/static/login.html';
+                return;
+              }
+              if (!response.ok) throw new Error('Failed to verify medicine');
+              const data = await response.json();
+              if (!data.is_valid) {
+                document.getElementById('error-message').textContent = `Invalid medicine name: ${fullName}. ${data.reason || 'Please enter a valid medicine.'}`;
+                document.getElementById('error-popup').style.display = 'block';
+                return;
+              }
+              const reminderTime = new Date();
+              const [hours, minutes] = time.split(':');
+              reminderTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+              if (reminderTime <= new Date()) reminderTime.setDate(reminderTime.getDate() + 1);
+              const unixTime = reminderTime.getTime();
+              await fetch('/api/send-email-reminder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: fullName, time: unixTime }),
+                credentials: 'include'
+              });
+              const medList = document.getElementById('med-list');
+              medList.innerHTML += `<li>${fullName} at ${time} (${document.getElementById('med-dosage').value || '1 pill'}) - Reminder Set</li>`;
+              alert(`Reminder set for ${fullName} at ${reminderTime.toLocaleTimeString()}`);
+            } catch (error) {
+              console.error('Error:', error);
+              document.getElementById('error-message').textContent = `Failed to set reminder: ${error.message}`;
+              document.getElementById('error-popup').style.display = 'block';
+            }
+          });
+        }
+      }
+
+      // Symptom Checker
+      const symptomForm = document.getElementById('symptom-form');
+      if (symptomForm) {
+        symptomForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const symptomsInput = document.getElementById('symptoms-input').value.trim();
+          if (!symptomsInput) {
+            document.getElementById('error-message').textContent = 'Please enter at least one symptom.';
+            document.getElementById('error-popup').style.display = 'block';
+            return;
+          }
+          const symptoms = symptomsInput.split(',').map(s => s.trim()).filter(s => s);
+          const age = parseInt(document.getElementById('age-input').value);
+          const gender = document.getElementById('gender-input').value;
+          if (!age || !gender) {
+            document.getElementById('error-message').textContent = 'Please enter age and select gender.';
+            document.getElementById('error-popup').style.display = 'block';
+            return;
+          }
+          try {
+            const response = await fetch('/api/symptoms', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ symptoms, age, gender }),
+              credentials: 'include'
+            });
+            if (response.status === 401 || response.status === 302) {
+              window.location.href = '/static/login.html';
+              return;
+            }
+            if (!response.ok) throw new Error('Failed to check symptoms');
+            const data = await response.json();
+            document.getElementById('ai-result').textContent = data.diagnoses.length 
+              ? data.diagnoses.map(d => `${d.condition}: ${d.confidence}%`).join('\n') 
+              : 'No conditions found';
+            document.getElementById('medicine-suggestions').textContent = data.medicine_suggestions.length 
+              ? data.medicine_suggestions.map(m => `${m.medicine}: ${m.dosage}`).join('\n') 
+              : 'No suggestions';
+            document.getElementById('mental-health-tips').textContent = 'Consult a professional for mental health support if needed.';
+          } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('error-message').textContent = `Failed to check symptoms: ${error.message}`;
+            document.getElementById('error-popup').style.display = 'block';
+          }
+        });
+
+        // Voice Input Button (Placeholder)
+        const voiceInputBtn = document.getElementById('voice-input-btn');
+        if (voiceInputBtn) {
+          voiceInputBtn.addEventListener('click', () => {
+            alert('Voice input feature is not implemented yet.');
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html>
